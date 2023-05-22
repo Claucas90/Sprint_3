@@ -133,8 +133,11 @@ GROUP BY p.nombre_corporativo
 ORDER BY total_stock ASC
 LIMIT 1;
 
--- Por último:
+/*-- Por último:
 -- Cambien la categoría de productos más popular por ‘Electrónica y computación’.
+
+EN ESTA PARTE ES DONDE TENGO PROBLEMAS -----
+
 SET SQL_SAFE_UPDATES = 0;
 
 
@@ -150,8 +153,4 @@ WHERE categoria_de_productos = (
         LIMIT 1
     ) AS subquery
 );
-
-
-
-
-
+*/
