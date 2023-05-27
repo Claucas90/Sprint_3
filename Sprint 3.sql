@@ -55,10 +55,22 @@ CREATE TABLE clientes (
 id INT AUTO_INCREMENT PRIMARY KEY,
 nombre VARCHAR(50),
 apellido VARCHAR(50),
-direccion VARCHAR(100)
+Direccion_id int,
+FOREIGN KEY (Direccion_id) REFERENCES Direcciones(id)
 )
 
-DELIMITER //
+CREATE TABLE Direcciones(
+id int auto_increment primary key,
+Direccion varchar(40),
+Comuna varchar(50)
+)
+
+INSERT INTO Direcciones (Direccion, Comuna)
+VALUES
+('direccion 1', 'comuna 1'),
+('direccion 2', 'comuna 2');
+
+/* DELIMITER //
 
 CREATE TRIGGER validar_direccion
 BEFORE INSERT ON Clientes
@@ -71,14 +83,14 @@ BEGIN
     END IF;
 END //
 
-DELIMITER ;
+DELIMITER ; */
 
-INSERT INTO clientes (nombre, apellido, direccion)
-VALUES ('Cliente 1', 'Apellido 1', 'Dirección 1'),
-       ('Cliente 2', 'Apellido 2', 'Dirección 2'),
-       ('Cliente 3', 'Apellido 3', 'Dirección 3'),
-       ('Cliente 4', 'Apellido 4', 'Dirección 4'),
-       ('Cliente 5', 'Apellido 5', 'Dirección 5');
+INSERT INTO clientes (nombre, apellido, Direccion_id)
+VALUES ('Cliente 1', 'Apellido 1', 1),
+       ('Cliente 2', 'Apellido 2', 2),
+       ('Cliente 3', 'Apellido 3', 1),
+       ('Cliente 4', 'Apellido 4', 1),
+       ('Cliente 5', 'Apellido 5', 2);
 
 
 CREATE TABLE productos (
@@ -86,24 +98,73 @@ CREATE TABLE productos (
     nombre VARCHAR(100),
     stock INT,
     precio DECIMAL(10, 2),
-    categoria VARCHAR(50),
     proveedor_id INT,
+    Categoria_id int,
     color VARCHAR(50),
-    FOREIGN KEY (proveedor_id) REFERENCES proveedores(id)
+    FOREIGN KEY (proveedor_id) REFERENCES proveedores(id),
+    FOREIGN KEY (Categoria_id) REFERENCES Categoria(id)
 );
 
-INSERT INTO productos (nombre, stock, precio, categoria, proveedor_id, color)
+INSERT INTO productos (nombre, stock, precio, categoria_id, proveedor_id, color)
 VALUES 
-('Producto 1', 100, 19.99, 'Electronica', 1, 'Rojo'),
-('Producto 2', 50, 49.99, 'Electronica', 2, 'Azul'),
-('Producto 3', 200, 9.99, 'Electricidad', 3, 'Verde'),
-('Producto 4', 75, 29.99, 'Electricidad', 4, 'Negro'),
-('Producto 5', 150, 14.99, 'CCTV', 5, 'Blanco'),
-('Producto 1', 80, 39.99, 'CCTV', 1, 'Gris'),
-('Producto 2', 120, 24.99, 'Pagina web', 2, 'Morado'),
-('Producto 3', 90, 34.99, 'Pagina web', 3, 'Amarillo'),
-('Producto 4', 60, 17.99, 'Alarmas', 4, 'Naranja'),
-('Producto 5', 100, 54.99, 'Alarmas', 5, 'Rosado');
+('Producto 1', 100, 19.99, 1, 1, 'Rojo'),
+('Producto 2', 50, 49.99, 1, 2, 'Azul'),
+('Producto 3', 200, 9.99, 5, 3, 'Verde'),
+('Producto 4', 75, 29.99, 5, 4, 'Negro'),
+('Producto 5', 150, 14.99, 2, 5, 'Blanco'),
+('Producto 1', 80, 39.99, 2, 1, 'Gris'),
+('Producto 2', 120, 24.99, 4, 2, 'Morado'),
+('Producto 3', 90, 34.99, 4, 3, 'Amarillo'),
+('Producto 4', 60, 17.99, 3, 4, 'Naranja'),
+('Producto 5', 100, 54.99, 3, 5, 'Rosado');
+
+CREATE TABLE Categoria(
+id int auto_increment primary key,
+Codigo_categoria int unique,
+Nombre_categoria varchar(50)
+)
+
+INSERT INTO Categoria(Codigo_categoria, Nombre_categoria)
+VALUES
+(01, 'ELECTRONICA'),
+(02, 'CCTV'),
+(03, 'Alarnas'),
+(04, 'Pagina web'),
+(05, 'Electricidad');
+
+CREATE TABLE Pedidos(
+id int auto_increment primary key,
+Codigo_pedido int unique,
+Fecha_compra date,
+Fecha_entrega date,
+Cliente_id int,
+Total_pedido int,
+Estado varchar(20),
+foreign key(Cliente_id) references clientes(id)
+)
+
+INSERT INTO Pedidos(Codigo_pedido, Fecha_compra, Fecha_entrega, Cliente_id, Total_pedido, Estado)
+VALUES
+(1, '2023-10-03', '2023-10-04', 1, 30000, 'Pendiente'),
+(2, '2023-09-13', '2023-10-10', 1, 50000, 'Pendiente');
+
+
+CREATE TABLE Detalle_pedido(
+id int auto_increment primary key,
+Pedido_id int,
+Producto_id int,
+Cantidad int,
+Precio_unitario DECIMAL(10,2),
+FOREIGN KEY(Producto_id) REFERENCES productos(id),
+FOREIGN KEY(Pedido_id) REFERENCES pedidos(id)
+)
+
+INSERT INTO Detalle_pedido(Pedido_id, Producto_id, Cantidad, Precio_unitario)
+VALUES
+(1, 1, 30, 1500),
+(1, 2, 45, 2000),
+(2, 5, 10, 500),
+(2, 6, 35, 100);
 
 -- Cuál es la categoría de productos que más se repite.
 SELECT categoria_de_productos, COUNT(*) AS cantidad
@@ -133,13 +194,13 @@ GROUP BY p.nombre_corporativo
 ORDER BY total_stock ASC
 LIMIT 1;
 
-/*-- Por último:
+-- Por último:
 -- Cambien la categoría de productos más popular por ‘Electrónica y computación’.
 
-EN ESTA PARTE ES DONDE TENGO PROBLEMAS -----
+SELECT detalle_pedido
+
 
 SET SQL_SAFE_UPDATES = 0;
-
 
 UPDATE Proveedores
 SET categoria_de_productos = 'Electrónica y computación'
@@ -153,4 +214,4 @@ WHERE categoria_de_productos = (
         LIMIT 1
     ) AS subquery
 );
-*/
+
